@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Vocabulary</title>
+
+<style>
+body{
+    font-family:Arial, sans-serif;
+    background:#f4f6f8;
+    margin:40px;
+}
+
+h1{text-align:center;}
+
+.container{
+    max-width:700px;
+    margin:auto;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 0 10px rgba(0,0,0,.1);
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-top:5px;
+    margin-bottom:15px;
+    font-size:18px;
+    box-sizing:border-box;
+}
+
+button{
+    padding:12px 20px;
+    font-size:17px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    margin:5px;
+}
+
+.add{background:#2196F3;color:white;}
+.clear{background:#f44336;color:white;}
+
+.word{
+    background:white;
+    margin-top:15px;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 0 5px rgba(0,0,0,.1);
+    cursor:pointer;
+}
+
+.english{
+    font-size:24px;
+    font-weight:bold;
+}
+
+.korean{
+    display:none;
+    margin-top:10px;
+    color:#1565c0;
+    font-size:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>📖 My Vocabulary</h1>
+
+<div class="card">
+<label>영어 단어</label>
+<input id="english" placeholder="예) abnormal">
+
+<label>뜻</label>
+<input id="korean" placeholder="예) 비정상적인">
+
+<button class="add" onclick="addWord()">➕ 단어 추가</button>
+<button class="clear" onclick="deleteAll()">🗑 전체 삭제</button>
+</div>
+
+<div id="wordList"></div>
+</div>
+
+<script>
+// =======================
+// 기본 단어 데이터
+// =======================
+const defaultWords = [
+      {"english":"apex","korean":"정점, 최고점"},
+  {"english":"atypical","korean":"전형적이지 않은, 이례적인"},
+  {"english":"avenge","korean":"복수하다"},
+  {"english":"coin","korean":"(새로운 단어나 표현을) 만들다"},
+  {"english":"confront","korean":"맞서다, 직면하다"},
+  {"english":"credence","korean":"신뢰, 믿음"},
+  {"english":"cultivate","korean":"기르다, 발전시키다, 함양하다"},
+  {"english":"deploy","korean":"배치하다, 투입하다"},
+  {"english":"disparity","korean":"격차, 불균형"},
+  {"english":"elastic","korean":"탄력 있는"},
+  {"english":"euphemism","korean":"완곡어법"},
+  {"english":"gravity","korean":"심각성"},
+  {"english":"impartial","korean":"공정한, 편견 없는"},
+  {"english":"inalienable","korean":"양도할 수 없는"},
+  {"english":"indigenous","korean":"토착의, 원산의"},
+  {"english":"luminous","korean":"빛나는, 밝은"},
+  {"english":"mediocre","korean":"평범한, 보통의"},
+  {"english":"momentous","korean":"매우 중요한"},
+  {"english":"pervasive","korean":"널리 퍼져 있는"},
+  {"english":"radical","korean":"급진적인; 급진주의자"},
+  {"english":"spectrum","korean":"범위, 스펙트럼"},
+  {"english":"tangible","korean":"유형의; 명확한"},
+  {"english":"transform","korean":"변형시키다, 완전히 바꾸다"},
+  {"english":"vehement","korean":"격렬한, 열정적인"},
+  {"english":"virtual","korean":"사실상의, 가상의"},
+  {"english":"aggregate","korean":"총합; 모으다"},
+  {"english":"animosity","korean":"적개심, 증오"},
+  {"english":"grievance","korean":"불만, 고충"},
+  {"english":"indignant","korean":"분개한"},
+  {"english":"indignation","korean":"분노, 분개"},
+  {"english":"predicament","korean":"곤경, 어려운 상황"},
+  {"english":"render","korean":"제공하다; ~한 상태로 만들다"},
+  {"english":"teem","korean":"가득하다, 들끓다"},
+  {"english":"tenant","korean":"세입자"},
+  {"english":"transmit","korean":"전달하다, 전송하다"},
+  {"english":"accumulate","korean":"축적하다"},
+  {"english":"banter","korean":"농담 섞인 대화"},
+  {"english":"explicit","korean":"명백한, 분명한"},
+  {"english":"foremost","korean":"가장 중요한; 무엇보다도"},
+  {"english":"founder","korean":"실패하다; 설립자"},
+  {"english":"generic","korean":"일반적인, 포괄적인"},
+  {"english":"indulgent","korean":"너무 관대한"},
+  {"english":"inept","korean":"서투른, 능숙하지 못한"},
+  {"english":"infer","korean":"추론하다"},
+  {"english":"lobby","korean":"로비하다, 영향력을 행사하다"},
+  {"english":"modify","korean":"수정하다, 변경하다"},
+  {"english":"purported","korean":"소문난, 주장된"},
+  {"english":"stringent","korean":"엄격한"},
+  {"english":"succinct","korean":"간결한"},
+  {"english":"thwart","korean":"좌절시키다, 방해하다"},
+  {"english":"access","korean":"접근; 접근하다"},
+  {"english":"apt","korean":"~하기 쉬운; 재능 있는; 적절한"},
+  {"english":"arbitrary","korean":"자의적인"},
+  {"english":"chaos","korean":"혼란"},
+  {"english":"colleague","korean":"동료"},
+  {"english":"compensate","korean":"보상하다"},
+  {"english":"complacent","korean":"자기만족에 빠진"},
+  {"english":"critique","korean":"비평, 평론"},
+  {"english":"devise","korean":"고안하다, 계획하다"},
+  {"english":"diverge","korean":"갈라지다, 벗어나다"},
+  {"english":"empathy","korean":"공감"},
+  {"english":"endow","korean":"부여하다, 기부하다"},
+  {"english":"hypothetical","korean":"가설의, 가정의"},
+  {"english":"inherent","korean":"고유한, 본질적인"},
+  {"english":"initiate","korean":"시작하다, 착수하다"},
+  {"english":"magnitude","korean":"규모, 중요성"},
+  {"english":"municipal","korean":"도시의, 지방자치의"},
+  {"english":"overt","korean":"공공연한, 명백한"},
+  {"english":"pedantic","korean":"현학적인, 지나치게 학문적인"},
+  {"english":"ploy","korean":"계략, 술책"},
+  {"english":"pompous","korean":"거만한, 잘난 체하는"},
+  {"english":"resolute","korean":"단호한, 확고한"},
+  {"english":"transparent","korean":"투명한; 명백한"},
+  {"english":"unique","korean":"독특한, 유일한"},
+  {"english":"urban","korean":"도시의"},
+  {"english":"imminent","korean":"임박한"},
+  {"english":"implicit","korean":"암묵적인, 내포된"},
+  {"english":"laudatory","korean":"칭찬하는, 찬양하는"},
+  {"english":"profound","korean":"깊은, 심오한"},
+  {"english":"prolific","korean":"다작의, 생산적인"},
+  {"english":"qualify","korean":"자격을 얻다; 제한하다"},
+  {"english":"quarrel","korean":"다툼, 언쟁"},
+  {"english":"reinforce","korean":"강화하다, 보강하다"},
+  {"english":"spontaneous","korean":"자발적인, 즉흥적인"},
+  {"english":"accommodate","korean":"수용하다, 요구를 들어주다"},
+  {"english":"allude","korean":"암시하다, 넌지시 언급하다"},
+  {"english":"appropriate","korean":"적절한; 횡령하다, 전용하다"},
+  {"english":"appoint","korean":"임명하다, 지정하다"},
+  {"english":"aptitude","korean":"재능, 적성"},
+  {"english":"attribute","korean":"속성; ~의 덕분으로 돌리다"},
+  {"english":"coherent","korean":"일관성 있는, 논리적인"},
+  {"english":"concession","korean":"양보, 허가"},
+  {"english":"conform","korean":"따르다, 순응하다"},
+  {"english":"correlate","korean":"상관관계를 맺다"},
+  {"english":"corroborate","korean":"입증하다, 뒷받침하다"},
+  {"english":"cryptic","korean":"수수께끼 같은, 비밀스러운"},
+  {"english":"dynamic","korean":"역동적인"},
+  {"english":"ephemeral","korean":"일시적인, 덧없는"},
+  {"english":"equivalent","korean":"동등한, 같은 가치의"},
+  {"english":"exhaustive","korean":"철저한, 완전한"},
+  {"english":"profound","korean":"심오한, 깊은"},
+  {"english":"prolific","korean":"다작의, 생산적인"},
+  {"english":"qualify","korean":"자격을 얻다; (발언 등을) 한정하다"},
+  {"english":"quarrel","korean":"다툼, 언쟁"},
+  {"english":"reinforce","korean":"강화하다, 보강하다"},
+  {"english":"spontaneous","korean":"자발적인, 즉흥적인"},
+  {"english":"abruptly","korean":"갑자기, 불시에"},
+  {"english":"anecdote","korean":"일화, 짧은 이야기"},
+  {"english":"civil","korean":"예의 바른; 시민의"},
+  {"english":"civilian","korean":"민간인"},
+  {"english":"covet","korean":"탐내다, 몹시 원하다"},
+  {"english":"deplore","korean":"한탄하다, 개탄하다"},
+  {"english":"diverse","korean":"다양한"},
+  {"english":"enlightened","korean":"계몽된, 깨우친"},
+  {"english":"flourish","korean":"번성하다, 번창하다"},
+  {"english":"foster","korean":"촉진하다, 육성하다"},
+  {"english":"immunity","korean":"면역; 면제"},
+  {"english":"induce","korean":"유도하다, 초래하다"},
+  {"english":"integrity","korean":"정직, 진실성, 완전성"},
+  {"english":"intolerable","korean":"참을 수 없는"},
+  {"english":"meticulous","korean":"매우 꼼꼼한"},
+  {"english":"narrative","korean":"이야기, 서술"},
+  {"english":"notorious","korean":"악명 높은"},
+  {"english":"obeisance","korean":"경의, 절"},
+  {"english":"paucity","korean":"부족, 결핍"},
+  {"english":"pious","korean":"독실한, 경건한"},
+  {"english":"proxy","korean":"대리인, 대리"},
+  {"english":"rote","korean":"기계적인 암기, 반복"},
+  {"english":"steadfast","korean":"확고한, 변함없는"},
+  {"english":"traverse","korean":"가로지르다, 횡단하다"},
+  {"english":"vernacular","korean":"일상어, 토착어"},
+  {"english":"aesthetic","korean":"미학의, 심미적인"},
+  {"english":"ascertain","korean":"확인하다, 알아내다"},
+  {"english":"autonomy","korean":"자치, 자율성"},
+  {"english":"casual","korean":"격식을 차리지 않는, 편안한"},
+  {"english":"compelling","korean":"매우 설득력 있는, 매력적인"},
+  {"english":"complacency","korean":"자기만족"},
+  {"english":"complexion","korean":"안색, 피부색"},
+  {"english":"depict","korean":"묘사하다"},
+  {"english":"dismay","korean":"실망, 낙담"},
+  {"english":"dogged","korean":"끈질긴, 집요한"},
+  {"english":"elicit","korean":"이끌어내다, 유도하다"},
+  {"english":"elusive","korean":"이해하기 어려운; 붙잡기 어려운"},
+  {"english":"incredulous","korean":"믿지 않는, 회의적인"},
+  {"english":"ingenuous","korean":"순진한, 꾸밈없는"},
+  {"english":"medium","korean":"매개체, 수단; 매체"},
+  {"english":"moderate","korean":"적당한; 중도적인; 조정하다; 완화되다"},
+  {"english":"monotonous","korean":"단조로운, 지루한"},
+  {"english":"naive","korean":"순진한, 경험이 부족한"},
+  {"english":"novel","korean":"새로운, 참신한"},
+  {"english":"pioneer","korean":"개척자, 선구자"},
+  {"english":"plausible","korean":"그럴듯한, 타당한"},
+  {"english":"refute","korean":"반박하다, 틀렸음을 입증하다"},
+  {"english":"superfluous","korean":"불필요한, 과도한"},
+  {"english":"ultimate","korean":"최종의, 궁극적인"},
+  {"english":"vital","korean":"필수적인, 매우 중요한"},
+  {"english":"abandon","korean":"버리다; 자제력 없음"},
+  {"english":"allusion","korean":"암시, 간접적인 언급"},
+  {"english":"arcane","korean":"난해한, 소수만 이해하는"},
+  {"english":"aristocratic","korean":"귀족의; 속물적인"},
+  {"english":"baffled","korean":"당황한, 어리둥절한"},
+  {"english":"commendation","korean":"칭찬, 표창"},
+  {"english":"consequence","korean":"결과; 중요성"},
+  {"english":"decry","korean":"공개적으로 비난하다"},
+  {"english":"definitive","korean":"결정적인, 최종적인"},
+  {"english":"dub","korean":"별명을 붙이다, ~라고 부르다"},
+  {"english":"encompass","korean":"포함하다; 둘러싸다"},
+  {"english":"engaging","korean":"매력적인, 흥미로운"},
+  {"english":"epoch","korean":"시대, 중요한 시기"},
+  {"english":"faculties","korean":"능력, 정신적·신체적 기능"},
+  {"english":"inclination","korean":"성향, 경향"},
+  {"english":"melodramatic","korean":"지나치게 감정적인, 과장된"},
+  {"english":"namely","korean":"즉, 다시 말해"},
+  {"english":"outright","korean":"완전한; 완전히"},
+  {"english":"protagonist","korean":"주인공"},
+  {"english":"quest","korean":"탐구, 추구; 찾다"},
+  {"english":"sophisticated","korean":"정교한; 세련된; 경험이 풍부한"},
+  {"english":"subjugate","korean":"정복하다, 굴복시키다"},
+  {"english":"unbridled","korean":"억제되지 않은"},
+  {"english":"verge","korean":"가장자리, 경계"},
+  {"english":"vibrant","korean":"활기찬; 선명한"},
+  {"english":"agitate","korean":"동요시키다, 불안하게 하다"},
+  {"english":"agriculture","korean":"농업"},
+  {"english":"bias","korean":"편견, 편향"},
+  {"english":"boisterous","korean":"떠들썩한, 활기찬"},
+  {"english":"collaborate","korean":"협력하다"},
+  {"english":"divergent","korean":"서로 다른, 갈라지는"},
+  {"english":"entice","korean":"유혹하다, 꾀다"},
+  {"english":"erroneous","korean":"잘못된, 틀린"},
+  {"english":"exemplify","korean":"예시하다, 전형이 되다"},
+  {"english":"fleece","korean":"양털; 속여 빼앗다"},
+  {"english":"inflammatory","korean":"선동적인; 염증을 일으키는"},
+  {"english":"innovation","korean":"혁신"},
+  {"english":"intermittent","korean":"간헐적인"},
+  {"english":"malleable","korean":"변형하기 쉬운; 유연한"},
+  {"english":"outmoded","korean":"구식의, 시대에 뒤떨어진"},
+  {"english":"perpetual","korean":"영구적인, 끊임없는"},
+  {"english":"ponder","korean":"곰곰이 생각하다"},
+  {"english":"privilege","korean":"특권"},
+  {"english":"prone","korean":"엎드린; ~하기 쉬운"},
+  {"english":"rampant","korean":"만연한, 걷잡을 수 없는"},
+  {"english":"shrewd","korean":"영리한, 판단력이 뛰어난"},
+  {"english":"shun","korean":"피하다, 멀리하다"},
+  {"english":"suppress","korean":"억압하다, 억제하다"},
+  {"english":"temperament","korean":"기질, 성격"},
+  {"english":"uncertainty","korean":"불확실성, 의심"},
+  {"english":"absurd","korean":"터무니없는, 불합리한"},
+  {"english":"advocate","korean":"옹호하다; 옹호자"},
+  {"english":"bolster","korean":"강화하다, 지원하다"},
+  {"english":"compound","korean":"결합하다; 혼합물; 건물 단지"},
+  {"english":"conducive","korean":"도움이 되는, 기여하는"},
+  {"english":"criteria","korean":"기준"},
+  {"english":"derive","korean":"얻다, 유래하다"},
+  {"english":"elite","korean":"엘리트; 뛰어난"},
+  {"english":"equivocal","korean":"애매한, 모호한"},
+  {"english":"evoke","korean":"불러일으키다, 떠올리게 하다"},
+  {"english":"fauna","korean":"동물군"},
+  {"english":"figurative","korean":"비유적인"},
+  {"english":"forestall","korean":"미리 막다, 예방하다"},
+  {"english":"intensive","korean":"집중적인"},
+  {"english":"ironic","korean":"아이러니한, 반어적인"},
+  {"english":"maritime","korean":"해양의, 항해의"},
+  {"english":"notable","korean":"주목할 만한; 저명인사"},
+  {"english":"obsession","korean":"집착, 강박"},
+  {"english":"prose","korean":"산문"},
+  {"english":"rational","korean":"합리적인, 이성적인"},
+  {"english":"reconcile","korean":"화해시키다; 조화시키다"},
+  {"english":"rigor","korean":"엄격함, 엄밀함; 고난"},
+  {"english":"skeptical","korean":"회의적인, 의심하는"},
+  {"english":"staple","korean":"주요한; 주식, 필수품"},
+  {"english":"tribute","korean":"찬사, 경의; 공물"},
+  {"english":"anxiety","korean":"불안, 걱정"},
+  {"english":"authoritative","korean":"권위 있는; 공식적인"},
+  {"english":"belie","korean":"거짓된 인상을 주다; 모순되다"},
+  {"english":"comprehend","korean":"이해하다"},
+  {"english":"contemplate","korean":"숙고하다, 깊이 생각하다"},
+  {"english":"contemporary","korean":"동시대 사람; 현대의, 동시대의"},
+  {"english":"conviction","korean":"확신, 신념"},
+  {"english":"crucial","korean":"결정적인, 매우 중요한"},
+  {"english":"cursory","korean":"피상적인, 대충 하는"},
+  {"english":"deter","korean":"단념시키다, 막다"},
+  {"english":"distinguish","korean":"구별하다; 두드러지게 하다"},
+  {"english":"estimate","korean":"추정하다, 추산하다"},
+  {"english":"faction","korean":"파벌, 분파"},
+  {"english":"gigantic","korean":"거대한"},
+  {"english":"inkling","korean":"어렴풋한 짐작"},
+  {"english":"legacy","korean":"유산"},
+  {"english":"maternal","korean":"어머니의, 모성의"},
+  {"english":"meager","korean":"빈약한, 부족한"},
+  {"english":"occult","korean":"신비한, 초자연적인"},
+  {"english":"parry","korean":"받아내다, 막아내다; 방어 동작"},
+  {"english":"preposterous","korean":"터무니없는, 황당한"},
+  {"english":"probe","korean":"조사하다; 조사, 탐침"},
+  {"english":"quip","korean":"재치 있는 한마디"},
+  {"english":"renaissance","korean":"부흥, 르네상스"},
+  {"english":"usurp","korean":"찬탈하다, 불법으로 빼앗다"},
+  {"english":"adapt","korean":"적응하다, 맞게 바꾸다"},
+  {"english":"agitation","korean":"동요, 선동, 소란"},
+  {"english":"ardent","korean":"열정적인"},
+  {"english":"bleak","korean":"암울한, 희망이 없는"},
+  {"english":"candid","korean":"솔직한, 숨김없는"},
+  {"english":"classic","korean":"고전적인; 최고 수준의"},
+  {"english":"consensus","korean":"의견 일치, 합의"},
+  {"english":"consumption","korean":"소비"},
+  {"english":"dialogue","korean":"대화, 토론"},
+  {"english":"diligent","korean":"부지런한, 성실한"},
+  {"english":"disdain","korean":"경멸하다; 경멸"},
+  {"english":"disposition","korean":"기질, 성향"},
+  {"english":"dominate","korean":"지배하다, 우세하다"},
+  {"english":"exasperation","korean":"격분, 몹시 짜증남"},
+  {"english":"exotic","korean":"이국적인"},
+  {"english":"exposition","korean":"설명; 박람회"},
+  {"english":"languish","korean":"쇠약해지다, 침체되다"},
+  {"english":"mundane","korean":"평범한, 일상적인"},
+  {"english":"presumably","korean":"아마도, 추정하건대"},
+  {"english":"prevalent","korean":"널리 퍼진, 만연한"},
+  {"english":"pristine","korean":"새것 같은, 깨끗한"},
+  {"english":"rout","korean":"참패; 완파하다"},
+  {"english":"surmount","korean":"극복하다"},
+  {"english":"trappings","korean":"겉치레, 장식"},
+  {"english":"variable","korean":"변하기 쉬운; 변수"},
+  {"english":"accord","korean":"일치, 조화; 협정"},
+  {"english":"assert","korean":"단언하다, 주장하다"},
+  {"english":"chronic","korean":"만성적인, 오래 지속되는"},
+  {"english":"coarse","korean":"거친; 세련되지 못한"},
+  {"english":"composed","korean":"침착한, 차분한"},
+  {"english":"conceive","korean":"생각해내다; 임신하다"},
+  {"english":"condescending","korean":"거만한, 잘난 체하는"},
+  {"english":"contented","korean":"만족한"},
+  {"english":"deliberate","korean":"의도적인; 숙고하다"},
+  {"english":"elaborate","korean":"정교한, 복잡한; 자세히 설명하다"},
+  {"english":"futile","korean":"헛된, 소용없는"},
+  {"english":"hardy","korean":"강인한, 튼튼한"},
+  {"english":"impair","korean":"손상시키다, 약화시키다"},
+  {"english":"incomprehensible","korean":"이해할 수 없는"},
+  {"english":"intuition","korean":"직관"},
+  {"english":"mandate","korean":"명령, 권한"},
+  {"english":"manifest","korean":"명백한; 분명히 나타내다"},
+  {"english":"nutritious","korean":"영양가 있는"},
+  {"english":"ostensibly","korean":"겉보기에는, 표면상으로는"},
+  {"english":"paltry","korean":"하찮은, 보잘것없는"},
+  {"english":"recede","korean":"물러나다, 후퇴하다"},
+  {"english":"tenacious","korean":"끈질긴, 집요한"},
+  {"english":"toxic","korean":"유독한"},
+  {"english":"unwitting","korean":"무의식적인, 모르고 하는"},
+  {"english":"vocation","korean":"직업, 천직"},
+  {"english":"accessible","korean":"접근 가능한, 이용 가능한"},
+  {"english":"appreciate","korean":"가치가 오르다; 감사하다"},
+  {"english":"attain","korean":"달성하다, 이루다"},
+  {"english":"austerity","korean":"검소함, 엄격함"},
+  {"english":"axiom","korean":"공리, 자명한 원리"},
+  {"english":"calamity","korean":"재난, 참사"},
+  {"english":"champion","korean":"옹호하다, 지지하다"},
+  {"english":"credible","korean":"믿을 만한"},
+  {"english":"detrimental","korean":"해로운"},
+  {"english":"disparate","korean":"서로 매우 다른"},
+  {"english":"evanescent","korean":"순식간에 사라지는, 덧없는"},
+  {"english":"expend","korean":"소비하다, 쓰다"},
+  {"english":"fare","korean":"요금; 음식; 지내다"},
+  {"english":"generation","korean":"세대; 생성"},
+  {"english":"nationalism","korean":"민족주의"},
+  {"english":"orthodox","korean":"정통의, 전통적인"},
+  {"english":"paradox","korean":"역설"},
+  {"english":"partisan","korean":"당파적인; 지지자"},
+  {"english":"poignant","korean":"가슴 아픈, 감동적인"},
+  {"english":"repeal","korean":"폐지하다"},
+  {"english":"replicate","korean":"복제하다, 재현하다"},
+  {"english":"speculative","korean":"추측에 근거한; 투기성의"},
+  {"english":"subtle","korean":"미묘한, 알아차리기 어려운"},
+  {"english":"synthetic","korean":"합성의, 인조의"},
+  {"english":"testify","korean":"증언하다; 입증하다"},
+  {"english":"aristocracy","korean":"귀족 계급"},
+  {"english":"available","korean":"이용 가능한"},
+  {"english":"compromise","korean":"타협"},
+  {"english":"conserve","korean":"보존하다, 절약하다"},
+  {"english":"correlation","korean":"상관관계"},
+  {"english":"cuisine","korean":"요리, 요리법"},
+  {"english":"enhance","korean":"향상시키다, 강화하다"},
+  {"english":"ethics","korean":"윤리, 도덕"},
+  {"english":"fervent","korean":"열렬한"},
+  {"english":"folly","korean":"어리석음, 어리석은 행동"},
+  {"english":"infinite","korean":"무한한"},
+  {"english":"inhibit","korean":"억제하다, 막다"},
+  {"english":"intrinsic","korean":"본질적인, 고유한"},
+  {"english":"linger","korean":"오래 머무르다, 남아 있다"},
+  {"english":"murky","korean":"어둡고 흐린; 불분명한"},
+  {"english":"odyssey","korean":"길고 험난한 여정"},
+  {"english":"petty","korean":"사소한, 옹졸한"},
+  {"english":"pivotal","korean":"중추적인, 매우 중요한"},
+  {"english":"redress","korean":"바로잡다; 보상"},
+  {"english":"reparation","korean":"배상, 보상"},
+  {"english":"sporadic","korean":"산발적인, 간헐적인"},
+  {"english":"tribulation","korean":"고난, 시련"},
+  {"english":"vast","korean":"광대한, 막대한"},
+  {"english":"vicious","korean":"사악한; 악의적인; 심한"},
+  {"english":"void","korean":"공허; 무효의"},
+  {"english":"apathetic","korean":"무관심한, 냉담한"},
+  {"english":"articulate","korean":"분명히 표현하다; 말을 잘하는"},
+  {"english":"callous","korean":"냉정한, 무정한"},
+  {"english":"censure","korean":"비난; 비난하다"},
+  {"english":"conventional","korean":"전통적인, 관습적인"},
+  {"english":"depletion","korean":"고갈, 소모"},
+  {"english":"exploit","korean":"이용하다, 착취하다; 위업"},
+  {"english":"flora","korean":"식물군"},
+  {"english":"foreboding","korean":"불길한 예감"},
+  {"english":"idyllic","korean":"목가적인, 평화로운"},
+  {"english":"immense","korean":"엄청난, 거대한"},
+  {"english":"justify","korean":"정당화하다"},
+  {"english":"marvel","korean":"경탄하다; 경이로운 것"},
+  {"english":"mode","korean":"방식, 형태"},
+  {"english":"paradigm","korean":"패러다임, 전형"},
+  {"english":"perverse","korean":"비뚤어진, 고집스러운"},
+  {"english":"potential","korean":"잠재적인; 잠재력"},
+  {"english":"profess","korean":"주장하다, 공언하다"},
+  {"english":"reiterate","korean":"반복하다"},
+  {"english":"resolve","korean":"해결하다; 결심하다; 결의"},
+  {"english":"simulate","korean":"모의실험하다, 흉내 내다"},
+  {"english":"sleek","korean":"매끈한, 윤기 있는"},
+  {"english":"substantive","korean":"실질적인, 중요한"},
+  {"english":"trivial","korean":"사소한"},
+  {"english":"unequivocal","korean":"명확한, 분명한"},
+  {"english":"absolute","korean":"절대적인, 완전한"},
+  {"english":"analogous","korean":"유사한"},
+  {"english":"autonomous","korean":"자율적인, 독립적인"},
+  {"english":"chagrin","korean":"당혹감, 분함"},
+  {"english":"convention","korean":"관습; 대회"},
+  {"english":"culprit","korean":"범인, 원인 제공자"},
+  {"english":"demeanor","korean":"태도, 품행"},
+  {"english":"devastate","korean":"황폐화시키다, 큰 충격을 주다"},
+  {"english":"dialect","korean":"방언"},
+  {"english":"disrupt","korean":"방해하다, 혼란시키다"},
+  {"english":"downplay","korean":"축소하다, 대수롭지 않게 여기다"},
+  {"english":"durable","korean":"내구성이 있는"},
+  {"english":"fend","korean":"막아내다, 대처하다"},
+  {"english":"fundamental","korean":"기본적인; 기본 원리"},
+  {"english":"judicious","korean":"분별 있는, 현명한"},
+  {"english":"liberal","korean":"개방적인; 관대한"},
+  {"english":"mediate","korean":"중재하다"},
+  {"english":"mimic","korean":"흉내쟁이; 흉내 내다"},
+  {"english":"oblivious","korean":"알지 못하는, 의식하지 못하는"},
+  {"english":"peril","korean":"위험, 위기"},
+  {"english":"prestige","korean":"명성, 위신"},
+  {"english":"propaganda","korean":"선전, 선동 정보"},
+  {"english":"rend","korean":"찢다, 찢어발기다"},
+  {"english":"sufficient","korean":"충분한"},
+  {"english":"suffrage","korean":"선거권, 투표권"},
+  {"english":"abnormal","korean":"비정상적인"},
+  {"english":"address","korean":"연설; 말하다; 다루다"},
+  {"english":"ambivalent","korean":"상반된 감정을 가진"},
+  {"english":"ample","korean":"충분한, 넉넉한"},
+  {"english":"apparatus","korean":"장치, 기구; 조직"},
+  {"english":"artisan","korean":"장인, 숙련공"},
+  {"english":"cadence","korean":"리듬, 운율"},
+  {"english":"cavalier","korean":"무심한, 경솔한; 오만한"},
+  {"english":"compatible","korean":"양립 가능한, 잘 맞는"},
+  {"english":"document","korean":"문서로 증명하다; 문서"},
+  {"english":"earnest","korean":"진지한, 성실한"},
+  {"english":"fluctuate","korean":"변동하다, 오르내리다"},
+  {"english":"indict","korean":"기소하다, 고발하다"},
+  {"english":"intimate","korean":"암시하다; 친밀한, 사적인"},
+  {"english":"irrelevant","korean":"무관한, 관계없는"},
+  {"english":"maximum","korean":"최대; 최대의"},
+  {"english":"monetary","korean":"금전적인, 화폐의"},
+  {"english":"notion","korean":"개념, 생각"},
+  {"english":"prosperous","korean":"번영하는, 성공한"},
+  {"english":"rigorous","korean":"엄격한, 철저한"},
+  {"english":"sanctuary","korean":"성역, 피난처"},
+  {"english":"status","korean":"지위, 상태"},
+  {"english":"sustain","korean":"유지하다, 지탱하다"},
+  {"english":"uncanny","korean":"이상한, 기이한"},
+  {"english":"wary","korean":"경계하는, 조심하는"},
+  {"english":"abolish","korean":"폐지하다"},
+  {"english":"afford","korean":"제공하다; 여유가 되다"},
+  {"english":"anguish","korean":"극심한 고통, 고뇌"},
+  {"english":"anomaly","korean":"이상 현상, 변칙"},
+  {"english":"array","korean":"배열; 다양한 집합"},
+  {"english":"ascribe","korean":"~의 탓으로 돌리다, ~에 기인하다"},
+  {"english":"brevity","korean":"간결함"},
+  {"english":"competent","korean":"유능한"},
+  {"english":"console","korean":"위로하다; 콘솔"},
+  {"english":"debris","korean":"잔해, 파편"},
+  {"english":"devoid","korean":"결여된, 없는"},
+  {"english":"emit","korean":"방출하다, 내뿜다"},
+  {"english":"essence","korean":"본질, 핵심"},
+  {"english":"finite","korean":"한정된, 유한한"},
+  {"english":"genre","korean":"장르, 유형"},
+  {"english":"maintain","korean":"유지하다; 주장하다"},
+  {"english":"maverick","korean":"독불장군, 비주류 인물"},
+  {"english":"migration","korean":"이주, 이동"},
+  {"english":"obligation","korean":"의무, 책임"},
+  {"english":"outlandish","korean":"괴상한, 기이한"},
+  {"english":"parallel","korean":"평행한; 유사한"},
+  {"english":"potent","korean":"강력한, 효능 있는"},
+  {"english":"subjective","korean":"주관적인"},
+  {"english":"transcend","korean":"초월하다, 뛰어넘다"},
+  {"english":"upheaval","korean":"격변, 대변동"},
+  {"english":"aspire","korean":"열망하다, 지망하다"},
+  {"english":"bar","korean":"금지하다, 막다"},
+  {"english":"cabal","korean":"음모 집단"},
+  {"english":"cognitive","korean":"인지의, 사고와 관련된"},
+  {"english":"confide","korean":"비밀을 털어놓다"},
+  {"english":"cumulative","korean":"누적되는"},
+  {"english":"distort","korean":"왜곡하다, 일그러뜨리다"},
+  {"english":"divine","korean":"신성한; 매우 훌륭한"},
+  {"english":"edict","korean":"명령, 칙령"},
+  {"english":"empirical","korean":"경험에 기반한"},
+  {"english":"encounter","korean":"마주치다; 만남; 충돌"},
+  {"english":"flagrant","korean":"노골적인, 극악한"},
+  {"english":"flaunt","korean":"과시하다, 뽐내다"},
+  {"english":"formality","korean":"형식, 절차"},
+  {"english":"insidious","korean":"교묘하게 해로운"},
+  {"english":"peculiar","korean":"특이한, 이상한"},
+  {"english":"perceive","korean":"인지하다, 감지하다"},
+  {"english":"phenomenon","korean":"현상; 경이로운 존재"},
+  {"english":"resume","korean":"이력서; 다시 시작하다"},
+  {"english":"reverence","korean":"존경, 경외"},
+  {"english":"rudimentary","korean":"기초적인, 미발달의"},
+  {"english":"rural","korean":"시골의"},
+  {"english":"solidarity","korean":"연대, 결속"},
+  {"english":"synthesis","korean":"합성, 종합"},
+  {"english":"whimsical","korean":"변덕스러운, 기발한"},
+  {"english":"abstract","korean":"추상적인"},
+  {"english":"ambiguous","korean":"모호한"},
+  {"english":"apartheid","korean":"인종차별 정책 (아파르트헤이트)"},
+  {"english":"asset","korean":"자산, 유용한 것"},
+  {"english":"awe","korean":"경외심"},
+  {"english":"benevolent","korean":"자비로운, 선한"},
+  {"english":"comprehensive","korean":"포괄적인"},
+  {"english":"data","korean":"자료, 데이터"},
+  {"english":"deceive","korean":"속이다"},
+  {"english":"detract","korean":"가치를 떨어뜨리다"},
+  {"english":"discriminate","korean":"구별하다; 차별하다"},
+  {"english":"exuberance","korean":"활기, 넘치는 열정"},
+  {"english":"gratitude","korean":"감사"},
+  {"english":"industrious","korean":"근면한"},
+  {"english":"invoke","korean":"불러일으키다, 호출하다"},
+  {"english":"maneuver","korean":"조작하다; 기동; 계획된 행동"},
+  {"english":"memoir","korean":"회고록"},
+  {"english":"ominous","korean":"불길한"},
+  {"english":"precede","korean":"앞서다"},
+  {"english":"propriety","korean":"예의 바름, 적절함"},
+  {"english":"psyche","korean":"정신, 마음"},
+  {"english":"sublime","korean":"장엄한, 숭고한"},
+  {"english":"venture","korean":"모험하다; 모험"},
+  {"english":"wrath","korean":"격노"},
+  {"english":"wry","korean":"비꼬는, 씁쓸한 유머"},
+  {"english":"advent","korean":"도래, 출현"},
+  {"english":"anonymous","korean":"익명의"},
+  {"english":"apprehensive","korean":"걱정하는, 불안한"},
+  {"english":"arid","korean":"건조한"},
+  {"english":"benefactor","korean":"후원자, 은인"},
+  {"english":"contentious","korean":"논쟁적인, 다투기 좋아하는"},
+  {"english":"contradict","korean":"모순되다, 반박하다"},
+  {"english":"curator","korean":"큐레이터, 관리인"},
+  {"english":"cynical","korean":"냉소적인"},
+  {"english":"deference","korean":"존중, 복종"},
+  {"english":"denounce","korean":"비난하다"},
+  {"english":"downright","korean":"완전한; 솔직한"},
+  {"english":"duration","korean":"기간"},
+  {"english":"embedded","korean":"내장된, 깊이 박힌"},
+  {"english":"endeavor","korean":"노력; 노력하다"},
+  {"english":"intricate","korean":"복잡한"},
+  {"english":"irrational","korean":"비합리적인"},
+  {"english":"panacea","korean":"만병통치약"},
+  {"english":"paramount","korean":"가장 중요한"},
+  {"english":"prominent","korean":"두드러진, 중요한"},
+  {"english":"restrict","korean":"제한하다"},
+  {"english":"stark","korean":"뚜렷한; 황량한"},
+  {"english":"static","korean":"정적인, 변화 없는"},
+  {"english":"sustenance","korean":"생존에 필요한 음식, 생계"},
+  {"english":"trifling","korean":"사소한, 하찮은"},
+];
+
+// =======================
+// localStorage 안전 로딩
+// =======================
+let words = [];
+
+const saved = localStorage.getItem("words");
+
+if (saved) {
+    try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+            words = parsed;
+        } else {
+            words = [...defaultWords];
+        }
+    } catch (e) {
+        words = [...defaultWords];
+    }
+} else {
+    words = [...defaultWords];
+    localStorage.setItem("words", JSON.stringify(words));
+}
+
+// =======================
+// 저장
+// =======================
+function save(){
+    localStorage.setItem("words", JSON.stringify(words));
+}
+
+// =======================
+// 화면 그리기
+// =======================
+function draw(){
+    const list = document.getElementById("wordList");
+    list.innerHTML = "";
+
+    words.forEach((word)=>{
+        const div = document.createElement("div");
+        div.className = "word";
+
+        div.innerHTML = `
+            <div class="english">${word.english}</div>
+            <div class="korean">${word.korean}</div>
+        `;
+
+        div.onclick = () => {
+            const k = div.querySelector(".korean");
+            k.style.display = (k.style.display === "block") ? "none" : "block";
+        };
+
+        list.appendChild(div);
+    });
+}
+
+// =======================
+// 단어 추가
+// =======================
+function addWord(){
+    const e = document.getElementById("english").value.trim();
+    const k = document.getElementById("korean").value.trim();
+
+    if(!e || !k){
+        alert("영어랑 뜻 둘 다 입력해야 됨");
+        return;
+    }
+
+    words.push({english:e, korean:k});
+    save();
+    draw();
+
+    document.getElementById("english").value = "";
+    document.getElementById("korean").value = "";
+}
+
+// =======================
+// 전체 삭제
+// =======================
+function deleteAll(){
+    if(confirm("진짜 다 삭제할거야?")){
+        words = [];
+        save();
+        draw();
+    }
+}
+
+// 처음 실행
+draw();
+
+</script>
+
+</body>
+</html>
